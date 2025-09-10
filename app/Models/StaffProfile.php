@@ -5,37 +5,41 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\User;
 use App\Models\Cafe;
-use App\Models\StaffProfile;
+use App\Models\Branch;
 
-class Branch extends Model
+class StaffProfile extends Model
 {
-    /** @use HasFactory<\Database\Factories\BranchFactory> */
+    /** @use HasFactory<\Database\Factories\StaffProfileFactory> */
     use HasFactory;
     
     protected $fillable = [
+        'user_id',
         'cafe_id',
-        'name',
-        'slug',
-        'address',
-        'phone',
-        'opening_hours',
+        'branch_id',
+        'position',
+        'hire_date',
         'is_active',
     ];
 
     protected $casts = [
-        'opening_hours' => 'array',
+        'hire_date' => 'date',
         'is_active' => 'boolean',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function cafe(): BelongsTo
     {
         return $this->belongsTo(Cafe::class);
     }
 
-    public function staff(): HasMany
+    public function branch(): BelongsTo
     {
-        return $this->hasMany(StaffProfile::class);
+        return $this->belongsTo(Branch::class);
     }
 }
