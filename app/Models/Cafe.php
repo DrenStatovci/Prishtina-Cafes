@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Branch;
 use App\Models\StaffProfile;
 use App\Models\Category;
+use App\Models\Product;
 
 
 class Cafe extends Model
@@ -45,5 +46,10 @@ class Cafe extends Model
     public function categories(): HasMany
     {
         return $this->hasMany(Category::class);
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
     }
 }
