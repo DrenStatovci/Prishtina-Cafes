@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\User;
 use App\Models\Branch;
 use App\Models\StaffProfile;
+use App\Models\Category;
 
 
 class Cafe extends Model
@@ -39,5 +40,10 @@ class Cafe extends Model
     public function staff(): HasMany
     {
         return $this->HasMany(StaffProfile::class);
+    }
+
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class);
     }
 }
