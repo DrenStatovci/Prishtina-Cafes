@@ -5,35 +5,37 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Cafe;
-use App\Models\Product;
+use App\Models\Category;
 
-
-class Category extends Model
+class Product extends Model
 {
-    /** @use HasFactory<\Database\Factories\CategoryFactory> */
+    /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
 
     protected $fillable = [
         'cafe_id',
+        'category_id',
         'name',
+        'description',
         'slug',
-        'is_active'
+        'price',
+        'is_active',
+        'image_url',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'price' => 'decimal:2',
     ];
-
 
     public function cafe(): BelongsTo
     {
         return $this->belongsTo(Cafe::class);
     }
 
-    public function products(): HasMany
+    public function category(): BelongsTo
     {
-        return $this->hasMany(Product::class);
+        return $this->belongsTo(Category::class);
     }
 }
