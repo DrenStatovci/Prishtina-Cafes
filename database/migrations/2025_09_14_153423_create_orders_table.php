@@ -21,15 +21,16 @@ return new class extends Migration
             $table->enum('status', ['pending', 'preparing', 'ready', 'delivered', 'cancelled'])->default('pending');
 
             $table->enum('payment_status', ['unpaid', 'paid', 'refunded'])->default('unpaid');
+            $table->enum('payment_method', ['cash', 'card', 'online'])->nullable();
 
-            $table->smallInteger('table_number')->nullable();
+            $table->unsignedSmallInteger('table_number')->nullable();
             $table->decimal('total_price', 10, 2)->default(0);
 
             $table->timestamps();
 
-            $table->index(['user_id', 'cafe_id', 'branch_id']);
-            $table->index('status');
+            $table->index(['cafe_id', 'branch_id', 'status']);
             $table->index('payment_status');
+            $table->index('created_at');
         });
     }
 
