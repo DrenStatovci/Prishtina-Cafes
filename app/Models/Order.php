@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Enums\PaymentStatus;
 use App\Models\User;
 use App\Models\Cafe;
 use App\Models\Branch;
@@ -55,8 +55,24 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    // public function payment(): HasOne
-    // {
-    //     return $this->hasOne(Payment::class);
-    // }
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function totalPaid(): string
+    {
+        return (string) $this->payments()
+            ->where('status', PaymentStatus::SUCCEEDED->value)
+            ->sum('amount');
+    }
+
+    public function refreshPaymentStatus(): void
+    {
+        $paid = $this->totalPaid();
+
+        $this->payment_status = bccomp($paid, $this->total_price, 2) >= 0 ? 'paid' : 'unpaid';
+
+        $this->save();
+    }
 }
