@@ -13,7 +13,7 @@ use App\Models\Cafe;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable,HasRoles ;
+    use HasFactory, Notifiable, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -52,5 +52,10 @@ class User extends Authenticatable
     public function cafes(): HasMany
     {
         return $this->hasMany(Cafe::class, 'owner_id');
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 }

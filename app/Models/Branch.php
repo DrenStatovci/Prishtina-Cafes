@@ -13,7 +13,7 @@ class Branch extends Model
 {
     /** @use HasFactory<\Database\Factories\BranchFactory> */
     use HasFactory;
-    
+
     protected $fillable = [
         'cafe_id',
         'name',
@@ -37,5 +37,10 @@ class Branch extends Model
     public function staff(): HasMany
     {
         return $this->hasMany(StaffProfile::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class);
     }
 }
