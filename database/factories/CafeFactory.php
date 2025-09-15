@@ -23,6 +23,9 @@ class CafeFactory extends Factory
             'owner_id' => User::factory(),
             'name'  => $name,
             'slug'  => Str::slug($name),
+            'email' => $this->faker->unique()->companyEmail(),
+            'phone' => $this->faker->phoneNumber(),
+            'description' => $this->faker->optional()->sentence(8),
         ];
     }
 }
