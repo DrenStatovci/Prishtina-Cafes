@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Services\Payments\MockPaymentService;
+use Illuminate\Support\Facades\Auth;
 
 class MockPaymentController extends Controller
 {
@@ -16,7 +17,7 @@ class MockPaymentController extends Controller
         abort_if($amountToPay <= 0, 400, 'Order is already fully paid.');
 
         $payment = $service->pay($order, $amountToPay, [
-            'initiator' => auth()->id
+            'initiator' => Auth::id()
         ]);
 
         return response()->json([

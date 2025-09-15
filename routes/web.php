@@ -3,7 +3,6 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-// use App\Http\Controllers\MockPaymentController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -25,9 +24,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
-
-// Route::post('/orders/{order}/pay-mock', [MockPaymentController::class, 'store'])
-//     ->middleware(['auth:sanctum']);
 
 require __DIR__ . '/auth.php';
