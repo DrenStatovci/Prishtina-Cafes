@@ -26,9 +26,13 @@ return new class extends Migration
             $table->unsignedSmallInteger('table_number')->nullable();
             $table->decimal('total_price', 10, 2)->default(0);
 
+            $table->text('notes')->nullable();
+
             $table->timestamps();
 
             $table->index(['cafe_id', 'branch_id', 'status']);
+            $table->index(['branch_id', 'status', 'created_at']);
+            $table->index(['cafe_id', 'created_at']);
             $table->index('payment_status');
             $table->index('created_at');
         });
