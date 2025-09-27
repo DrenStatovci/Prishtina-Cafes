@@ -2,50 +2,41 @@
 
 namespace App\Policies;
 
-use App\Models\Cafe;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Models\Cafe;
+use App\Policies\Concerns\ScopedAccess;
 
 class CafePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
+    use ScopedAccess;
+
+    //qito dy tparat po i lo qishtu se spo di hala qka ndodh kur dojn klientat normal me i pa kafiqat.
+
     public function viewAny(User $user): bool
     {
-        return false;
+        // return $user->hasAnyRole(['admin','owner','manager']);
+        return true;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Cafe $cafe): bool
     {
-        return false;
+        // return $this->admin($user) || $user->isOwnerOfCafe($cafe->id) || $this->staffOfCafe($user, $cafe->id);
+        return true;
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasAnyRole(['admin', 'owner']);
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Cafe $cafe): bool
     {
-        return false;
+        return $this->admin($user) || $user->isOwnerOfCafe($cafe->id) || $user->canManageCafe($cafe->id);
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, Cafe $cafe): bool
     {
-        return false;
+        return $this->admin($user) || $user->isOwnerOfCafe($cafe->id);
     }
 
     /**
@@ -53,7 +44,7 @@ class CafePolicy
      */
     public function restore(User $user, Cafe $cafe): bool
     {
-        return false;
+        return $this->admin($user);
     }
 
     /**
@@ -61,6 +52,6 @@ class CafePolicy
      */
     public function forceDelete(User $user, Cafe $cafe): bool
     {
-        return false;
+        return $this->admin($user);
     }
 }

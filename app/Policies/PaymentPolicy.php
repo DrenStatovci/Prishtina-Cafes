@@ -8,59 +8,44 @@ use Illuminate\Auth\Access\Response;
 
 class PaymentPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
+    protected function related(User $user, Payment $payment): bool
+    {
+        $o = $payment->order;
+        if ($user->hasRole('admin')) return true;
+        if ($o->user_id && $o->user_id === $user->id) return true;
+
+        return $user->isOwnerOfCafe($o->cafe_id)
+            || $user->isStaffOfCafe($o->cafe_id)
+            || ($o->branch_id && $user->isStaffOfBranch($o->branch_id));
+    }
+
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->hasRole('admin');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Payment $payment): bool
     {
-        return false;
+        return $this->related($user, $payment);
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(User $user, int $orderId): bool
     {
-        return false;
+        // delegohet te OrderPolicy::pay
+        $order = \App\Models\Order::find($orderId);
+        return $order ? (new \App\Policies\OrderPolicy)->pay($user, $order) : false;
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Payment $payment): bool
+    public function refund(User $user, Payment $payment): bool
     {
-        return false;
+        // vetëm admin/owner/manager të kafesë
+        $o = $payment->order;
+        if ($user->hasRole('admin')) return true;
+        return $user->isOwnerOfCafe($o->cafe_id) || ($user->isStaffOfCafe($o->cafe_id) && $user->hasAnyRole(['owner','manager']));
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, Payment $payment): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Payment $payment): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Payment $payment): bool
-    {
-        return false;
+        return $user->hasRole('admin');
     }
 }
