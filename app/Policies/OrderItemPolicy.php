@@ -8,59 +8,41 @@ use Illuminate\Auth\Access\Response;
 
 class OrderItemPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    protected function canTouch(User $user, OrderItem $item): bool
     {
-        return false;
+        $o = $item->order;
+        if ($user->hasRole('admin')) return true;
+        if ($o->user_id && $o->user_id === $user->id) return true;
+
+        return $user->isOwnerOfCafe($o->cafe_id)
+            || $user->isStaffOfCafe($o->cafe_id)
+            || ($o->branch_id && $user->isStaffOfBranch($o->branch_id));
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, OrderItem $orderItem): bool
+    public function view(User $user, OrderItem $item): bool
     {
-        return false;
+        return $this->canTouch($user, $item);
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(User $user, int $orderId): bool
     {
-        return false;
+        // Lejo kur përdoruesi mund të prekë porosinë dhe porosia s’ka hyrë në “preparing+”
+        $order = \App\Models\Order::find($orderId);
+        if (! $order) return false;
+
+        $can = (new self)->canTouch($user, new OrderItem(['order_id'=>$order->id]));
+        return $can && in_array($order->status, ['pending']);
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, OrderItem $orderItem): bool
+    public function update(User $user, OrderItem $item): bool
     {
-        return false;
+        $o = $item->order;
+        return $this->canTouch($user, $item) && in_array($o->status, ['pending']);
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, OrderItem $orderItem): bool
+    public function delete(User $user, OrderItem $item): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, OrderItem $orderItem): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, OrderItem $orderItem): bool
-    {
-        return false;
+        $o = $item->order;
+        return $this->canTouch($user, $item) && in_array($o->status, ['pending']);
     }
 }

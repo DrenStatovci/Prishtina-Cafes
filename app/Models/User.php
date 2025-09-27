@@ -112,9 +112,9 @@ class User extends Authenticatable
 
         if ($this->isOwnerOfCafe($branch->cafe_id)) return true;
 
-        if ($this->isStaffOfBranch($branch_id) && $this->hasAnyRole(['owner', 'manager'])) return true;
+        if ($this->isStaffOfCafe($branch->cafe_id) && $this->hasAnyRole(['owner', 'manager'])) return true;
 
-        if ($this->isStaffOfCafe($branch->cafe_id) && $this->hasAnyRole(['owner', 'manager', 'waiter', 'bartender'])) return true;
+        if ($this->isStaffOfBranch($branch_id) && $this->hasAnyRole(['owner', 'manager', 'waiter', 'bartender'])) return true;
 
         return false;
     }

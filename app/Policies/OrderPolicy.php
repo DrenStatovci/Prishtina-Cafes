@@ -8,59 +8,44 @@ use Illuminate\Auth\Access\Response;
 
 class OrderPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
+
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->isAdmin();
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Order $order): bool
     {
-        return false;
+        if ($user->hasRole('admin')) return true;
+        if ($order->user_id && $order->user_id === $user->id) return true;
+
+        return $user->isOwnerOfCafe($order->cafe_id)
+            || $user->isStaffOfCafe($order->cafe_id)
+            || ($order->branch_id && $user->isStaffOfBranch($order->branch_id));
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return false;
+        return $user->exists; // çdo i autentikuar
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Order $order): bool
+    public function updateStatus(User $user, Order $order): bool
     {
-        return false;
+        if ($user->hasRole('admin')) return true;
+        if ($order->branch_id && $user->isStaffOfBranch($order->branch_id)) return true;
+        return $user->canManageCafe($order->cafe_id);
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
+    public function pay(User $user, Order $order): bool
+    {
+        if ($user->hasRole('admin')) return true;
+        if ($order->user_id && $order->user_id === $user->id) return true;
+        if ($order->branch_id && $user->isStaffOfBranch($order->branch_id)) return true;
+        return $user->isStaffOfCafe($order->cafe_id);
+    }
+
     public function delete(User $user, Order $order): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Order $order): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Order $order): bool
-    {
-        return false;
+        return $user->hasRole('admin') || $user->isOwnerOfCafe($order->cafe_id);
     }
 }

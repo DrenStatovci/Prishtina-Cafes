@@ -8,59 +8,36 @@ use Illuminate\Auth\Access\Response;
 
 class StaffProfilePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->hasAnyRole(['admin','owner','manager']);
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, StaffProfile $staffProfile): bool
+    public function view(User $user, StaffProfile $profile): bool
     {
-        return false;
+        if ($user->hasRole('admin')) return true;
+        if ($profile->user_id === $user->id) return true; // sheh profilin e vet
+
+        return $user->isOwnerOfCafe($profile->cafe_id)
+            || ($user->isStaffOfCafe($profile->cafe_id) && $user->hasAnyRole(['owner','manager']));
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(User $user, int $cafeId): bool
     {
-        return false;
+        return $user->hasRole('admin') || $user->isOwnerOfCafe($cafeId) || ($user->isStaffOfCafe($cafeId) && $user->hasAnyRole(['owner','manager']));
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, StaffProfile $staffProfile): bool
+    public function update(User $user, StaffProfile $profile): bool
     {
-        return false;
+        if ($user->hasRole('admin')) return true;
+        if ($profile->user_id === $user->id) return true;
+
+        return $user->isOwnerOfCafe($profile->cafe_id)
+            || ($user->isStaffOfCafe($profile->cafe_id) && $user->hasAnyRole(['owner','manager']));
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, StaffProfile $staffProfile): bool
+    public function delete(User $user, StaffProfile $profile): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, StaffProfile $staffProfile): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, StaffProfile $staffProfile): bool
-    {
-        return false;
+        return $user->hasRole('admin') || $user->isOwnerOfCafe($profile->cafe_id);
     }
 }
