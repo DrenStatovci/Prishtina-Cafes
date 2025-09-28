@@ -11,7 +11,7 @@ class MockPaymentController extends Controller
 {
     public function store(Order $order, MockPaymentService $service)
     {
-        // $this->authorize('pay', $order);
+        $this->authorize('pay', $order);
 
         $amountToPay = max(0, (float)$order->total_price - (float)$order->totalPaid());
         abort_if($amountToPay <= 0, 400, 'Order is already fully paid.');

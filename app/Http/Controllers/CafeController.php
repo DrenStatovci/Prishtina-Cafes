@@ -1,66 +1,45 @@
 <?php
 
-namespace App\Http\Controllers;
-
-use App\Http\Requests\StoreCafeRequest;
-use App\Http\Requests\UpdateCafeRequest;
-use App\Models\Cafe;
-
 class CafeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    use AppliesQueryFilters;
+
+    public function index(Request $r) {
+        $this->authorize('viewAny', Cafe::class);
+        $q = Cafe::query();
+
+        // shfaq vetëm cafet ku je staf (admin bypass nga Gate::before)
+        $staffCafeIds = DB::table('staff_profiles')
+            ->where('user_id', $r->user()->id)->where('is_active', true)
+            ->pluck('cafe_id');
+        $q->whereIn('id', $staffCafeIds);
+
+        $this->applyCommon($q, $r, ['name','created_at']);
+        return CafeResource::collection($q->paginate(20));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+    public function store(CafeStoreRequest $req) {
+        $cafe = new Cafe($req->validated());
+        $this->authorize('create', $cafe);
+        if (empty($cafe->slug)) $cafe->slug = Str::slug($cafe->name).'-'.Str::lower(Str::random(6));
+        $cafe->save();
+        return (new CafeResource($cafe))->response()->setStatusCode(201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreCafeRequest $request)
-    {
-        //
+    public function show(Cafe $cafe) {
+        $this->authorize('view', $cafe);
+        return new CafeResource($cafe);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Cafe $cafe)
-    {
-        //
+    public function update(CafeUpdateRequest $req, Cafe $cafe) {
+        $this->authorize('update', $cafe);
+        $cafe->fill($req->validated())->save();
+        return new CafeResource($cafe);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Cafe $cafe)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCafeRequest $request, Cafe $cafe)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Cafe $cafe)
-    {
-        //
+    public function destroy(Cafe $cafe) {
+        $this->authorize('delete', $cafe);
+        $cafe->delete(); // restrictOnDelete në orders/branches ruan historikun
+        return response()->noContent();
     }
 }
