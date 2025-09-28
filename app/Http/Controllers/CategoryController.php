@@ -2,65 +2,56 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreCategoryRequest;
-use App\Http\Requests\UpdateCategoryRequest;
+use App\Http\Requests\{CategoryStoreRequest, CategoryUpdateRequest};
+use App\Http\Resources\CategoryResource;
 use App\Models\Category;
+use App\Support\AppliesQueryFilters;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+    use AppliesQueryFilters;
+
+    public function index(Request $r) {
+        $this->authorize('viewAny', Category::class);
+        $q = Category::query();
+
+        if ($r->filled('cafe_id')) $q->where('cafe_id', (int)$r->query('cafe_id'));
+
+        // vetëm brenda cafëve ku je staf
+        $staffCafeIds = DB::table('staff_profiles')
+            ->where('user_id', $r->user()->id)->where('is_active', true)
+            ->pluck('cafe_id');
+        $q->whereIn('cafe_id', $staffCafeIds);
+
+        $this->applyCommon($q, $r, ['name','created_at']);
+        return CategoryResource::collection($q->paginate(50));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+    public function store(CategoryStoreRequest $req) {
+        $cat = new Category($req->validated());
+        $this->authorize('create', $cat);
+        if (empty($cat->slug)) $cat->slug = Str::slug($cat->name).'-'.Str::lower(Str::random(6));
+        $cat->save();
+        return (new CategoryResource($cat))->response()->setStatusCode(201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreCategoryRequest $request)
-    {
-        //
+    public function show(Category $category) {
+        $this->authorize('view', $category);
+        return new CategoryResource($category);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Category $category)
-    {
-        //
+    public function update(CategoryUpdateRequest $req, Category $category) {
+        $this->authorize('update', $category);
+        $category->fill($req->validated())->save();
+        return new CategoryResource($category);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Category $category)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCategoryRequest $request, Category $category)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Category $category)
-    {
-        //
+    public function destroy(Category $category) {
+        $this->authorize('delete', $category);
+        $category->delete();
+        return response()->noContent();
     }
 }
