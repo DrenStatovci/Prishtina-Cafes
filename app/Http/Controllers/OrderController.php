@@ -36,7 +36,10 @@ class OrderController extends Controller
 
     // Customer creates an order
     public function store(OrderStoreRequest $req) {
+        $this->authorize('create', Order::class);
         $data = $req->validated();
+
+        
 
         $order = DB::transaction(function () use ($req, $data) {
             $total = '0.00';

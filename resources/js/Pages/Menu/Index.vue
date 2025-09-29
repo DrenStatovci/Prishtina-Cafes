@@ -2,23 +2,31 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import CafeBranchPicker from '@/Components/CafeBranchPicker.vue';
+import CategoryTabs from '@/Components/CategoryTabs.vue';
+import ProductsGrid from '@/Components/ProductsGrid.vue';
+import CartDrawer from '@/Components/CartDrawer.vue';
 import { useCafeStore } from '@/stores/cafe';
+import { ref } from 'vue';
 
-const store = useCafeStore();
-store.hydrate();
+const store = useCafeStore(); store.hydrate();
+const selectedCategory = ref(null);
+function onSelect(slug) { selectedCategory.value = slug; }
 </script>
 
 <template>
   <AppLayout>
-    <h1 class="text-xl font-semibold mb-4">Menu</h1>
-    <CafeBranchPicker />
+    <h1 class="text-xl font-semibold mb-4 text-brand-700">Menu</h1>
 
-    <div class="mt-6 text-sm text-gray-600">
-      <div v-if="store.cafe">Café: <strong>{{ store.cafe.name }}</strong></div>
-      <div v-if="store.branch">Branch: <strong>{{ store.branch.name }}</strong></div>
-      <div v-else-if="store.cafe">Branch: <em>(none selected)</em></div>
+    <div class="card mb-5"><div class="card-body">
+      <CafeBranchPicker />
+    </div></div>
+
+    <div class="mb-4">
+      <CategoryTabs @select="onSelect" />
     </div>
 
-    <!-- Next: load categories/products based on store.cafe.slug -->
+    <ProductsGrid :categorySlug="selectedCategory" />
+
+    <CartDrawer />
   </AppLayout>
 </template>
