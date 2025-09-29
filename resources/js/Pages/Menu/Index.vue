@@ -4,6 +4,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import CafeBranchPicker from '@/Components/CafeBranchPicker.vue';
 import CategoryTabs from '@/Components/CategoryTabs.vue';
 import ProductsGrid from '@/Components/ProductsGrid.vue';
+import CartDrawer from '@/Components/CartDrawer.vue';
 import { useCafeStore } from '@/stores/cafe';
 import { ref } from 'vue';
 
@@ -25,5 +26,7 @@ function onSelect(slug) { selectedCategory.value = slug; }
     </div>
 
     <ProductsGrid :categorySlug="selectedCategory" />
+
+    <CartDrawer />
   </AppLayout>
 </template>

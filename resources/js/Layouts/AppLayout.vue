@@ -31,7 +31,7 @@ function toggleDark() {
       <div class="container">
         <div class="h-16 flex items-center gap-4">
           <Link href="/" class="font-semibold tracking-tight text-lg flex items-center gap-2">
-            <span class="text-brand-600">☕</span><span>Cafe MVP</span>
+            <span class="text-brand-600">☕</span><span>Prishtina Cafes</span>
           </Link>
 
           <nav class="hidden md:flex items-center gap-6 text-sm">
@@ -80,7 +80,7 @@ function toggleDark() {
     <!-- Footer -->
     <footer class="border-t hr">
       <div class="container py-8 text-xs text-ink-900/60 flex items-center justify-between">
-        <span>© {{ new Date().getFullYear() }} Cafe MVP</span>
+        <span>© {{ new Date().getFullYear() }} Prishtina Cafes</span>
         <span>Laravel + Inertia + Tailwind</span>
       </div>
     </footer>

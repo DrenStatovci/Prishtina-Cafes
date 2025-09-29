@@ -2,9 +2,18 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 import axios from 'axios';
+import { useCartStore } from '@/stores/cart';
+import { toCents } from '@/utils/money';
+
+const cart = useCartStore(); cart.hydrate();
 const props = defineProps({ categorySlug: { type: String, default: null } });
 const products = ref([]), meta = ref(null), loading = ref(false);
 const search = ref(''), sort = ref('created_at'), dir = ref('desc'), page = ref(1);
+
+function addToCart(p) {
+  const cents = toCents(p.price);
+  cart.add(p, 1, cents);
+}
 
 const getPaginated = (res) => {
   const body = res.data || {};
@@ -54,17 +63,17 @@ onMounted(fetchProducts);
     <div v-if="loading" class="text-sm text-ink-900/60">Loading products…</div>
     <div v-else-if="products.length===0" class="text-sm text-ink-900/60">No products.</div>
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      <div v-for="p in products" :key="p.id" class="card">
-        <div class="card-body">
-          <div class="flex items-start justify-between gap-3">
-            <h3 class="font-semibold">{{ p.name }}</h3>
-            <span class="badge">€{{ p.price }}</span>
-          </div>
-          <p v-if="p.description" class="text-sm text-ink-900/70 mt-1 line-clamp-2">{{ p.description }}</p>
-          <button class="btn btn-primary mt-3">Add to cart</button>
+    <div v-for="p in products" :key="p.id" class="card">
+      <div class="card-body">
+        <div class="flex items-start justify-between gap-3">
+          <h3 class="font-semibold">{{ p.name }}</h3>
+          <span class="badge">€{{ p.price }}</span>
         </div>
+        <p v-if="p.description" class="text-sm text-ink-900/70 mt-1 line-clamp-2">{{ p.description }}</p>
+        <button class="btn btn-primary mt-3" @click="addToCart(p)">Add to cart</button>
       </div>
     </div>
+  </div>
 
     <!-- Pager -->
     <div v-if="meta" class="mt-6 flex items-center justify-center gap-3">
@@ -74,4 +83,3 @@ onMounted(fetchProducts);
     </div>
   </div>
 </template>
-    
