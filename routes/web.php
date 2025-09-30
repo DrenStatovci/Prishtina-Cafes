@@ -8,11 +8,15 @@ use Inertia\Inertia;
 
 Route::get('/', fn() => inertia('Welcome'))->name('home'); // public
 
+Route::middleware('guest')
+    ->get('/', fn() => inertia('Welcome'))
+    ->name('home');
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', fn() => inertia('Dashboard'))->name('dashboard');     // protected
+    Route::get('/dashboard', fn() => inertia('Dashboard'))->name('dashboard');
     Route::get('/menu', fn() => inertia('Menu/Index'))->name('menu');
-    Route::get('/my-orders', fn() => inertia('MyOrders'))->name('my-orders');     // customer orders
+    Route::get('/my-orders', fn() => inertia('MyOrders'))->name('my-orders');
     Route::get('/staff/dashboard', function () {
         return Inertia::render('Staff/Dashboard');
     })->name('staff.dashboard');
