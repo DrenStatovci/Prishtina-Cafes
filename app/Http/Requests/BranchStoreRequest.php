@@ -15,9 +15,9 @@ class BranchStoreRequest extends FormRequest {
             'cafe_id'       => ['required','integer','exists:cafes,id'],
             'name'          => ['required','string','max:255'],
             'slug'          => ['nullable','string','max:255','unique:branches,slug'],
-            'street'        => ['nullable','string','max:255'],
-            'city'          => ['nullable','string','max:120'],
-            'opening_hours' => ['nullable','array'],
+            'address'       => ['nullable','string','max:500'],
+            'phone'         => ['nullable','string','max:50'],
+            'opening_hours' => ['nullable','string','max:255'],
             'is_active'     => ['boolean'],
         ];
     }

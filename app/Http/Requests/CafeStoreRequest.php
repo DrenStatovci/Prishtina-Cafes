@@ -18,6 +18,7 @@ class CafeStoreRequest extends FormRequest {
             'phone'       => ['nullable','string','max:50'],
             'email'       => ['nullable','email','max:255'],
             'description' => ['nullable','string'],
+            'is_active'   => ['boolean'],
         ];
     }
 }

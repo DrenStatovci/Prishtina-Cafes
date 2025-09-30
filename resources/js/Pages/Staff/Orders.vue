@@ -1,8 +1,7 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { usePage } from '@inertiajs/vue3'
-import AppLayout from '@/Layouts/AppLayout.vue'
-import CafeBranchPicker from '@/Components/CafeBranchPicker.vue'
+import StaffLayout from '@/Layouts/StaffLayout.vue'
 import axios from 'axios'
 import { useCafeStore } from '@/stores/cafe'
 import Badge from '@/Components/ui/Badge.vue'
@@ -90,6 +89,11 @@ function totalPaid(o) {
   return (cents / 100).toFixed(2)
 }
 
+// Watch for cafe/branch changes to refetch orders
+watch(() => [cafe.cafe?.id, cafe.branch?.id], () => {
+  fetchAll()
+}, { immediate: false })
+
 onMounted(async () => {
   await loadLockedBranch()
   await fetchAll()
@@ -99,7 +103,7 @@ onUnmounted(stopAuto)
 </script>
 
 <template>
-  <AppLayout>
+  <StaffLayout title="Staff" :showPicker="true">
     <div class="flex items-center justify-between mb-4">
       <h1 class="text-xl font-semibold text-brand-700">Staff Board</h1>
       <div class="flex items-center gap-3">
@@ -110,24 +114,6 @@ onUnmounted(stopAuto)
         <button class="btn btn-secondary" @click="fetchAll">Refresh</button>
       </div>
     </div>
-
-    <!-- Nëse përdoruesi NUK mund të zgjedhë branch -->
-    <div v-if="!scope.canChooseBranch" class="card mb-5">
-      <div class="card-body flex items-center justify-between">
-        <div>
-          <div class="text-sm text-ink-900/70">Working branch</div>
-          <div class="font-semibold">
-            {{ lockedBranch?.name ?? ('#'+ (scope.lockedBranchId ?? '')) }}
-          </div>
-        </div>
-        <span class="badge">Locked</span>
-      </div>
-    </div>
-
-    <!-- Përndryshe: lejo zgjedhje cafe/branch -->
-    <div v-else class="card mb-5"><div class="card-body">
-      <CafeBranchPicker />
-    </div></div>
 
     <div v-if="errorMsg" class="rounded-lg bg-red-50 text-red-700 border border-red-200 px-4 py-2 text-sm mb-4">
       {{ errorMsg }}
@@ -168,7 +154,7 @@ onUnmounted(stopAuto)
                 </div>
                 <div class="flex gap-2">
                   <button class="btn btn-primary" @click="updateStatus(o, nextStatus('pending'))">{{ nextLabel('pending') }}</button>
-                  <button class="btn btn-ghost" @click="updateStatus(o, 'canceled')">Cancel</button>
+                  <button class="btn btn-ghost" @click="updateStatus(o, 'cancelled')">Cancel</button>
                 </div>
               </div>
             </div>
@@ -211,7 +197,7 @@ onUnmounted(stopAuto)
                 </div>
                 <div class="flex gap-2">
                   <button class="btn btn-primary" @click="updateStatus(o, nextStatus('preparing'))">{{ nextLabel('preparing') }}</button>
-                  <button class="btn btn-ghost" @click="updateStatus(o, 'canceled')">Cancel</button>
+                  <button class="btn btn-ghost" @click="updateStatus(o, 'cancelled')">Cancel</button>
                 </div>
               </div>
             </div>
@@ -254,7 +240,7 @@ onUnmounted(stopAuto)
                 </div>
                 <div class="flex gap-2">
                   <button class="btn btn-primary" @click="updateStatus(o, nextStatus('ready'))">{{ nextLabel('ready') }}</button>
-                  <button class="btn btn-ghost" @click="updateStatus(o, 'canceled')">Cancel</button>
+                  <button class="btn btn-ghost" @click="updateStatus(o, 'cancelled')">Cancel</button>
                 </div>
               </div>
             </div>
@@ -263,5 +249,5 @@ onUnmounted(stopAuto)
         </div>
       </section>
     </div>
-  </AppLayout>
+  </StaffLayout>
 </template>

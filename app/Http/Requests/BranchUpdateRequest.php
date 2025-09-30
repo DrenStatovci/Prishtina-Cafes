@@ -22,9 +22,9 @@ class BranchUpdateRequest extends FormRequest {
         return [
             'name'          => ['sometimes','string','max:255'],
             'slug'          => ['sometimes','string','max:255', Rule::unique('branches','slug')->ignore($id)],
-            'street'        => ['sometimes','nullable','string','max:255'],
-            'city'          => ['sometimes','nullable','string','max:120'],
-            'opening_hours' => ['sometimes','nullable','array'],
+            'address'       => ['sometimes','nullable','string','max:500'],
+            'phone'         => ['sometimes','nullable','string','max:50'],
+            'opening_hours' => ['sometimes','nullable','string','max:255'],
             'is_active'     => ['sometimes','boolean'],
         ];
     }

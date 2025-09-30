@@ -33,6 +33,17 @@ class UserFactory extends Factory
     }
 
     /**
+     * Configure the model factory.
+     */
+    public function configure(): static
+    {
+        return $this->afterCreating(function (\App\Models\User $user) {
+            // Assign customer role by default
+            $user->assignRole('customer');
+        });
+    }
+
+    /**
      * Indicate that the model's email address should be unverified.
      */
     public function unverified(): static

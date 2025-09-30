@@ -13,7 +13,9 @@ class PublicCafeController extends Controller
     use AppliesQueryFilters;
 
     public function cafes(Request $r) {
-        $q = Cafe::query()->select('id','name','slug','email');
+        $q = Cafe::query()
+            ->where('is_active', true)
+            ->select('id','name','slug','email','phone','description');
         // $this->applyCommon($q, $r, ['name','created_at']);
         return CafeResource::collection($q->paginate(20));
     }
