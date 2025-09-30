@@ -21,6 +21,8 @@ function toggleDark() {
   localStorage.setItem('theme', dark.value ? 'dark' : 'light')
   document.documentElement.classList.toggle('dark', dark.value)
 }
+
+console.log(roles);
 </script>
 
 <template>
@@ -35,7 +37,8 @@ function toggleDark() {
           </Link>
 
           <nav class="hidden md:flex items-center gap-6 text-sm">
-            <Link href="/dashboard" class="hover:text-brand-700">Dashboard</Link>
+            <Link v-if="!isStaff" href="/dashboard" class="hover:text-brand-700">Dashboard</Link>
+            <Link v-if="isStaff" href="/staff/dashboard" class="hover:text-brand-700">Dashboard</Link>
             <Link href="/menu" class="hover:text-brand-700">Menu</Link>
             <Link v-if="isStaff" href="/staff/orders" class="hover:text-brand-700">Orders</Link>
             <Link v-if="canManage" href="/manage/products" class="hover:text-brand-700">Manage</Link>
