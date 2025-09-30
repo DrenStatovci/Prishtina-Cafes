@@ -22,7 +22,10 @@ class CafeGraphSeeder extends Seeder
     {
 
         $owner = User::factory()->create(['email' => 'owner@demo.com']);
+        $owner->assignRole('owner'); // Override default customer role
+
         $customer = User::factory()->create(['email' => 'customer@demo.com']);
+        // Customer role is already assigned by factory
 
         $cafes = Cafe::factory()->count(2)->create(['owner_id' => $owner->id]);
 

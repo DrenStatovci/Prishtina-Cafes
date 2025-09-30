@@ -32,7 +32,7 @@ console.log(roles);
     <header class="sticky top-0 z-30 backdrop-blur bg-white/90 border-b border-brand-100">
       <div class="container">
         <div class="h-16 flex items-center gap-4">
-          <Link href="/" class="font-semibold tracking-tight text-lg flex items-center gap-2">
+          <Link href="/dashboard" class="font-semibold tracking-tight text-lg flex items-center gap-2">
             <span class="text-brand-600">☕</span><span>Prishtina Cafes</span>
           </Link>
 
@@ -40,14 +40,12 @@ console.log(roles);
             <Link v-if="!isStaff" href="/dashboard" class="hover:text-brand-700">Dashboard</Link>
             <Link v-if="isStaff" href="/staff/dashboard" class="hover:text-brand-700">Dashboard</Link>
             <Link href="/menu" class="hover:text-brand-700">Menu</Link>
+            <Link v-if="!isStaff" href="/my-orders" class="hover:text-brand-700">My Orders</Link>
             <Link v-if="isStaff" href="/staff/orders" class="hover:text-brand-700">Orders</Link>
-            <Link v-if="canManage" href="/manage/products" class="hover:text-brand-700">Manage</Link>
+            <Link v-if="canManage" href="/staff/manage" class="hover:text-brand-700">Manage</Link>
           </nav>
 
           <div class="ml-auto flex items-center gap-2">
-            <button class="btn btn-ghost" @click="toggleDark" title="Toggle theme">
-              <span v-if="!dark">🌙</span><span v-else>☀️</span>
-            </button>
             <div class="hidden md:flex items-center gap-3">
               <span v-if="user" class="text-sm text-ink-900/70">Hi, {{ user.name }}</span>
               <Link v-if="user" href="/logout" method="post" as="button" class="btn btn-secondary">Logout</Link>
@@ -60,8 +58,10 @@ console.log(roles);
         <!-- Mobile -->
         <div v-show="mobileOpen" class="md:hidden pb-4">
           <nav class="flex flex-col gap-2 text-sm">
-            <Link href="/dashboard" class="btn btn-ghost justify-start">Dashboard</Link>
+            <Link v-if="!isStaff" href="/dashboard" class="btn btn-ghost justify-start">Dashboard</Link>
+            <Link v-if="isStaff" href="/staff/dashboard" class="btn btn-ghost justify-start">Dashboard</Link>
             <Link href="/menu" class="btn btn-ghost justify-start">Menu</Link>
+            <Link v-if="!isStaff" href="/my-orders" class="btn btn-ghost justify-start">My Orders</Link>
             <Link v-if="isStaff" href="/staff/orders" class="btn btn-ghost justify-start">Orders</Link>
             <Link v-if="canManage" href="/manage/products" class="btn btn-ghost justify-start">Manage</Link>
             <div class="border-t my-2 hr"></div>

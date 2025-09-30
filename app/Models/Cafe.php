@@ -26,6 +26,11 @@ class Cafe extends Model
         'phone',
         'description',
         'logo_url',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function owner(): BelongsTo

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import axios from 'axios'
 import StaffLayout from '@/Layouts/StaffLayout.vue'
@@ -64,11 +64,19 @@ const kpi = computed(() => ({
   revenue:   sumPaid([...pending.value, ...preparing.value, ...ready.value]), // revenue “live” në board
 }))
 
+// Watch for cafe/branch changes to refetch data
+watch(() => [cafe.cafe?.id, cafe.branch?.id], () => {
+  fetchAll()
+}, { immediate: false })
+
 onMounted(fetchAll)
 </script>
 
 <template>
   <StaffLayout title="Staff Dashboard" :showPicker="true">
+    <div class="flex items-center justify-end mb-4">
+      <button class="btn btn-secondary" :disabled="loading" @click="fetchAll">Refresh</button>
+    </div>
     <div v-if="errorMsg" class="rounded-lg bg-red-50 text-red-700 border border-red-200 px-4 py-2 text-sm mb-4">
       {{ errorMsg }}
     </div>

@@ -1,8 +1,28 @@
 <!-- resources/js/Components/CafeBranchPicker.vue -->
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import axios from 'axios';
 import { useCafeStore } from '@/stores/cafe';
+import { usePage } from '@inertiajs/vue3';
+
+const page = usePage()
+const roles = computed(() => page.props.auth?.roles ?? [])
+const isAdmin = computed(() => roles.value.includes('admin'))
+const isStaff = computed(() => roles.value.some(role => ['admin', 'owner', 'manager', 'waiter', 'bartender'].includes(role)))
+const isCustomer = computed(() => roles.value.includes('customer') && !isStaff.value)
+
+// Check if we're in staff context (StaffLayout)
+const isStaffContext = computed(() => {
+  const currentPath = window.location.pathname
+  return currentPath.startsWith('/staff/') || currentPath.startsWith('/manage/')
+})
+
+// For menu page, all users can select any cafe
+// For staff pages, only admins can select cafe, but all staff can select branch
+const canSelectCafe = computed(() => {
+  if (!isStaffContext.value) return true // Menu page - all users
+  return isAdmin.value // Staff pages - only admins
+})
 
 const store = useCafeStore();
 const cafes = ref([]), branches = ref([]);
@@ -39,8 +59,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="grid gap-4 sm:grid-cols-2">
-    <div>
+  <div class="grid gap-4" :class="canSelectCafe ? 'sm:grid-cols-2' : 'sm:grid-cols-1'">
+    <div v-if="canSelectCafe">
       <label class="label">Café</label>
       <select class="select" :disabled="loadingCafes" @change="onCafeChange">
         <option :value="''">Choose a café…</option>
