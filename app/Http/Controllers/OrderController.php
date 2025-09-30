@@ -11,29 +11,43 @@ use Illuminate\Http\Request;
 class OrderController extends Controller
 {
     // Staff/Kitchen board
-    public function index(Request $r) {
-        $user = $r->user();
+public function index(Request $r) {
+    $user = $r->user();
 
-        $q = Order::query()->with(['items.product','payments'])
-            ->when($r->filled('status'), fn($q) => $q->where('status', $r->query('status')));
+    $q = Order::query()->with(['items.product','payments'])
+        ->when($r->filled('status'), fn($q) => $q->where('status', $r->query('status')))
+        ->when($r->filled('cafe_id'), fn($q) => $q->where('cafe_id', (int)$r->query('cafe_id')))
+        ->when($r->filled('branch_id'), fn($q) => $q->where('branch_id', (int)$r->query('branch_id')))
+        ->orderByDesc('created_at');
 
-        // filtro sipas kërkesës
-        if ($r->filled('cafe_id'))   $q->where('cafe_id',   (int)$r->query('cafe_id'));
-        if ($r->filled('branch_id')) $q->where('branch_id', (int)$r->query('branch_id'));
+    // Admin can see all; everyone else is scoped by staff_profiles
+    if (!$user->hasRole('admin')) {
+        $profiles = DB::table('staff_profiles')
+            ->select('cafe_id','branch_id')
+            ->where('user_id', $user->id)
+            ->where('is_active', true)
+            ->get();
 
-        // skopim sipas staff_profiles (user duhet të jetë staf i atij café/branche)
-        $q->where(function($w) use ($user) {
-            $staffCafes = DB::table('staff_profiles')
-                ->where('user_id', $user->id)
-                ->where('is_active', true)
-                ->pluck('cafe_id');
-            $w->whereIn('cafe_id', $staffCafes);
+        // cafe-level access (branch_id NULL) can see all branches of that cafe
+        $cafeLevel = $profiles->whereNull('branch_id')->pluck('cafe_id')->unique()->values();
+        // branch-level access only that branch
+        $branchIds = $profiles->whereNotNull('branch_id')->pluck('branch_id')->unique()->values();
+
+        $q->where(function ($w) use ($branchIds, $cafeLevel) {
+            $first = true;
+            if ($branchIds->isNotEmpty()) {
+                $w->whereIn('branch_id', $branchIds);
+                $first = false;
+            }
+            if ($cafeLevel->isNotEmpty()) {
+                $first ? $w->whereIn('cafe_id', $cafeLevel)
+                       : $w->orWhereIn('cafe_id', $cafeLevel);
+            }
         });
-
-        $q->orderByDesc('created_at');
-        return OrderResource::collection($q->paginate(20));
     }
 
+    return OrderResource::collection($q->paginate(20));
+}
     // Customer creates an order
     public function store(OrderStoreRequest $req) {
         $this->authorize('create', Order::class);

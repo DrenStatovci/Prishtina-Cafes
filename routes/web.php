@@ -8,16 +8,25 @@ use Inertia\Inertia;
 
 Route::get('/', fn () => inertia('Welcome'))->name('home'); // public
 
+
 Route::middleware(['auth','verified'])->group(function () {
-    Route::get('/dashboard', fn () => inertia('Dashboard'))->name('dashboard'); // protected
+    Route::get('/dashboard', fn () => inertia('Dashboard'))->name('dashboard');     // protected
+    Route::get('/menu', fn () => inertia('Menu/Index'))->name('menu');
+    Route::get('/staff/dashboard', function () {
+        return Inertia::render('Staff/Dashboard');
+    })->name('staff.dashboard');
 });
 
-Route::get('/menu', fn () => inertia('Menu/Index'))->name('menu');
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+Route::middleware(['auth','verified','role:owner|manager|waiter|bartender|admin'])
+    ->get('/staff/orders', fn () => inertia('Staff/Orders'))
+    ->name('staff.orders');
+
+
+// Route::middleware('auth')->group(function () {
+//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// });
 
 
 require __DIR__ . '/auth.php';
