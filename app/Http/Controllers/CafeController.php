@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\{CafeStoreRequest, CafeUpdateRequest};
 use App\Http\Resources\CafeResource;
 use App\Models\Cafe;
+use App\Models\StaffProfile;
 use App\Support\AppliesQueryFilters;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -36,6 +37,12 @@ class CafeController extends Controller
         return CafeResource::collection($q->paginate(20));
     }
 
+    /**
+     * Store a newly created cafe in storage.
+     * 
+     * Automatically creates a staff profile for the cafe owner
+     * and assigns the 'owner' role to the user.
+     */
     public function store(CafeStoreRequest $req)
     {
         $this->authorize('create', Cafe::class);
@@ -43,21 +50,12 @@ class CafeController extends Controller
         if (empty($cafe->slug))
             $cafe->slug = Str::slug($cafe->name) . '-' . Str::lower(Str::random(6));
         $cafe->save();
-
-        // Create staff profile for the owner
         if ($cafe->owner_id) {
             $owner = \App\Models\User::find($cafe->owner_id);
             if ($owner) {
-                // Assign owner role
                 $owner->assignRole('owner');
 
-                // Create staff profile
-                \App\Models\StaffProfile::create([
-                    'user_id' => $cafe->owner_id,
-                    'cafe_id' => $cafe->id,
-                    'position' => 'owner',
-                    'is_active' => true,
-                ]);
+                StaffProfile::createForOwner($cafe->owner_id, $cafe->id);
             }
         }
 
@@ -70,6 +68,12 @@ class CafeController extends Controller
         return new CafeResource($cafe->load('owner'));
     }
 
+    /**
+     * Update the specified cafe in storage.
+     * 
+     * Handles owner changes by removing old owner's staff profile
+     * and creating a new staff profile for the new owner.
+     */
     public function update(CafeUpdateRequest $req, Cafe $cafe)
     {
         $this->authorize('update', $cafe);
@@ -80,10 +84,7 @@ class CafeController extends Controller
         if ($cafe->owner_id !== $oldOwnerId) {
             // Remove old owner's staff profile for this cafe
             if ($oldOwnerId) {
-                \App\Models\StaffProfile::where('user_id', $oldOwnerId)
-                    ->where('cafe_id', $cafe->id)
-                    ->where('position', 'owner')
-                    ->delete();
+                StaffProfile::removeOwnerFromCafe($oldOwnerId, $cafe->id);
             }
 
             // Create new owner's staff profile
@@ -93,13 +94,8 @@ class CafeController extends Controller
                     // Assign owner role
                     $owner->assignRole('owner');
 
-                    // Create staff profile
-                    \App\Models\StaffProfile::create([
-                        'user_id' => $cafe->owner_id,
-                        'cafe_id' => $cafe->id,
-                        'position' => 'owner',
-                        'is_active' => true,
-                    ]);
+                    // Create staff profile using the dedicated method
+                    StaffProfile::createForOwner($cafe->owner_id, $cafe->id);
                 }
             }
         }
